@@ -11,17 +11,21 @@ def botMode_main():
     playerName = ""
     
     while True:
-        playerName = input(f"Inserisci il tuo nome giocatore\n{Fore.GREEN}{Style.BRIGHT}>>> {colorama.Style.RESET_ALL}").strip()
+        playerName = input(f"Inserisci il tuo nome giocatore\n{Fore.GREEN}{Style.BRIGHT}>>> {Style.RESET_ALL}").strip()
         
         if playerName != "":
             break
         else:
             os.system('cls' if os.name == 'nt' else 'clear')
             botModeBanner()
-            print(f"{Fore.RED}{Style.BRIGHT}IL NOME NON PUO' ESSERE VUOTO. REINSERISCI{colorama.Style.RESET_ALL}")
+            print(f"{Fore.RED}{Style.BRIGHT}IL NOME NON PUO' ESSERE VUOTO. REINSERISCI{Style.RESET_ALL}")
 
     player = Player(playerName)
     bot = Player("Bender The Bot", is_bot=True)
+    
+    # Inizializzazione contatori delle navi rimaste per entrambi
+    player.navi_rimanenti = len(player.flotta)
+    bot.navi_rimanenti = len(bot.flotta)
     
     # 1. Posizionamento del giocatore
     placingShips(player.myboard, player.flotta)
@@ -44,10 +48,8 @@ def botMode_main():
             # Turno del Player
             playerGame(player, bot)
             
-            # TODO: Qui potrai inserire il controllo della vittoria (es. se bot.navi_rimanenti == 0: break)
-            
         else:
-            # Turno del Bot (Logica temporanea: spara a caso)
+            # Turno del Bot
             os.system('cls' if os.name == 'nt' else 'clear')
             print(f"\n{Fore.RED}{Style.BRIGHT}Turno di {bot.nome}...{Style.RESET_ALL}")
             sleep(1.5)
@@ -60,11 +62,22 @@ def botMode_main():
                 
                 if esito != "ALREADY_FIRED":
                     if esito == "HIT":
-                        print(f"{Fore.RED}ATTENZIONE! {bot.nome} ha colpito una tua nave in {chr(65+c)}{r+1}!{Style.RESET_ALL}")
+                        # Controlla quale nave del giocatore è stata colpita e se è affondata
+                        nave_affondata = False
+                        for nave in player.flotta:
+                            if (r, c) in nave.coordinates:
+                                if nave.vita == 0:
+                                    nave_affondata = True
+                                break
+                        if nave_affondata:
+                            player.navi_rimanenti -= 1
+                            print(f"{Fore.RED}ATTENZIONE! {bot.nome} ha colpito e AFFONDATO una tua nave in {chr(65+c)}{r+1}!{Style.RESET_ALL}")
+                        else:
+                            print(f"{Fore.RED}ATTENZIONE! {bot.nome} ha colpito una tua nave in {chr(65+c)}{r+1}!{Style.RESET_ALL}")
                     elif esito == "MISS":
                         print(f"{Fore.BLUE}{bot.nome} ha mancato il bersaglio sparando in {chr(65+c)}{r+1}.{Style.RESET_ALL}")
                     sleep(2.5)
-                    break # Esce dal ciclo del bot perché ha effettuato un attacco valido
+                    break 
             
         if sum(nave.vita for nave in bot.flotta) == 0:
                 os.system('cls' if os.name == 'nt' else 'clear')
@@ -91,8 +104,6 @@ def botMode_main():
                 
                 input(f"{Fore.WHITE}Premi INVIO per tornare al menu principale...{Style.RESET_ALL}")
                 break
-            
-            
             
         # Inversione dei ruoli alla fine di ogni turno
         playerTurn = not playerTurn
