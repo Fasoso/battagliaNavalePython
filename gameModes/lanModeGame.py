@@ -2,19 +2,14 @@ import os
 import readchar
 from time import sleep
 from colorama import Fore, Style
-
-# Importiamo tutte le grafiche, le logiche e le classi
 from gameFiles.logicFunctions import *
 from gameFiles.classesFile import *
-
-# Importiamo le funzioni di rete
 from gameFiles.lanNetlogic import host_game, join_game
 
 def start_lan_match(conn, is_host):
     """Gestisce la partita in LAN unendo la rete al mirino interattivo e alla chat."""
     os.system('cls' if os.name == 'nt' else 'clear')
     
-    # 1. CREAZIONE GIOCATORE
     print(f"{Fore.CYAN}{Style.BRIGHT}=== PREPARAZIONE FLOTTA ==={Style.RESET_ALL}")
     while True:
         playerName = input(f"Inserisci il tuo nome comandante\n{Fore.GREEN}>>> {Style.RESET_ALL}").strip()
@@ -23,10 +18,9 @@ def start_lan_match(conn, is_host):
             break
         print(f"{Fore.RED}Il nome non può essere vuoto.{Style.RESET_ALL}")
 
-    # 2. POSIZIONAMENTO NAVI
     placingShips(player.myboard, player.flotta)
     
-    # 3. SINCRONIZZAZIONE E SCAMBIO NOMI
+
     os.system('cls' if os.name == 'nt' else 'clear')
     print(f"{Fore.YELLOW}In attesa che l'avversario finisca di posizionare le navi...{Style.RESET_ALL}")
     
@@ -40,24 +34,19 @@ def start_lan_match(conn, is_host):
         sleep(2)
         loadingAnimation()
         
-    # 4. LOOP DI GIOCO LAN
     playerTurn = True if is_host else False
     game_over = False
+            
+    avversario_lan = LanOpponent(len(player.flotta))
     
-    # Creiamo un oggetto finto per l'avversario LAN per attivare i filtri .is_bot = False
-    class LanOpponent:
-        def __init__(self):
-            self.is_bot = False
-    avversario_lan = LanOpponent()
+    if hasattr(player, 'navi_rimanenti'):
+        player.navi_rimanenti = len(player.flotta)
     
     while True:
         if game_over:
             break
             
         if playerTurn:
-            # ==========================================
-            # TURNO DI ATTACCO (Mirino interattivo)
-            # ==========================================
             riga = 0
             colonna = 0
             comand = ""
@@ -100,8 +89,6 @@ def start_lan_match(conn, is_host):
                             ha_sparato = True 
                     else:
                         cmd = comand.strip().lower()
-                        
-                        # CHIAMATA ALLA FUNZIONE CENTRALIZZATA SU LOGICFUNCTIONS
                         azione = comandLine(cmd, avversario_lan, conn)
                         
                         if azione == "SURRENDER":
@@ -119,8 +106,7 @@ def start_lan_match(conn, is_host):
             
             if game_over:
                 break
-                        
-            # --- FASE DI INVIO MISSILE ---
+
             player.shotsFired += 1 
             print(f"\n{Fore.CYAN}Missile lanciato verso {chr(65+colonna)}{riga+1}...{Style.RESET_ALL}")
             conn.send(f"{riga},{colonna}".encode('utf-8'))
@@ -130,6 +116,12 @@ def start_lan_match(conn, is_host):
             if esito == "HIT":
                 player.shotsHit += 1 
                 print(f"{Fore.GREEN}BERSAGLIO COLPITO!{Style.RESET_ALL}")
+                player.enemyBoard.grid[riga][colonna] = 4
+                sleep(2)
+            elif esito == "SUNK":
+                player.shotsHit += 1
+                avversario_lan.navi_rimanenti -= 1  # Decrementiamo il contatore delle navi nemiche!
+                print(f"{Fore.GREEN}{Style.BRIGHT}BERSAGLIO COLPITO E AFFONDATO!{Style.RESET_ALL}")
                 player.enemyBoard.grid[riga][colonna] = 4
                 sleep(2)
             elif esito == "MISS":
@@ -153,9 +145,6 @@ def start_lan_match(conn, is_host):
                 break
             
         else:
-            # ==========================================
-            # TURNO DI DIFESA (Attesa mossa o comandi)
-            # ==========================================
             os.system('cls' if os.name == 'nt' else 'clear')
             print(f"{Fore.RED}{Style.BRIGHT}TURNO NEMICO{Style.RESET_ALL}\n")
             
@@ -190,12 +179,15 @@ def start_lan_match(conn, is_host):
                 
             if player.myboard.grid[r_nemico][c_nemico] == 1:
                 player.myboard.grid[r_nemico][c_nemico] = 4
+                nave_affondata = False
+                
                 for nave in player.flotta:
                     if (r_nemico, c_nemico) in nave.coordinates:
                         nave.vita -= 1
+                        if nave.vita == 0:
+                            nave_affondata = True
                         break
-                print(f"\n{Fore.RED}NAVE COLPITA! ({chr(65+c_nemico)}{r_nemico+1}){Style.RESET_ALL}")
-                
+                        
                 if sum(nave.vita for nave in player.flotta) == 0:
                     conn.send("WIN".encode('utf-8'))
                     os.system('cls' if os.name == 'nt' else 'clear')
@@ -209,7 +201,15 @@ def start_lan_match(conn, is_host):
                     print(f"Precisione:    {precisione}%\n")
                     input(f"{Fore.WHITE}Premi INVIO per tornare al menu principale...{Style.RESET_ALL}")
                     break
+                elif nave_affondata:
+                    if hasattr(player, 'navi_rimanenti'):
+                        player.navi_rimanenti -= 1
+                        
+                    print(f"\n{Fore.RED}NAVE COLPITA E AFFONDATA! ({chr(65+c_nemico)}{r_nemico+1}){Style.RESET_ALL}")
+                    conn.send("SUNK".encode('utf-8'))
+                    sleep(2.5)
                 else:
+                    print(f"\n{Fore.RED}NAVE COLPITA! ({chr(65+c_nemico)}{r_nemico+1}){Style.RESET_ALL}")
                     conn.send("HIT".encode('utf-8'))
                     sleep(2.5)
             else:

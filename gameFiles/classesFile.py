@@ -86,3 +86,8 @@ class Player:
             enemy_player.myboard.grid[row][col] = 2  
             
             return "MISS"
+
+class LanOpponent:
+    def __init__(self, navi_iniziali):
+        self.is_bot = False
+        self.navi_rimanenti = navi_iniziali

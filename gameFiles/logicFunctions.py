@@ -43,13 +43,9 @@ def winBanner():
      ▒▒▒█████▒    ▒███     ▒███        ▒███    ▒▒███     ███  ▒███    ▒███  ▒███  ▒███    ▒███ 
        ▒▒███      █████    █████       █████    ▒▒▒███████▒   █████   █████ █████ █████   █████
         ▒▒▒      ▒▒▒▒▒    ▒▒▒▒▒       ▒▒▒▒▒       ▒▒▒▒▒▒▒    ▒▒▒▒▒   ▒▒▒▒▒ ▒▒▒▒▒ ▒▒▒▒▒   ▒▒▒▒▒ 
-                                                                                                
-                                                                                                
-                                                                                                
     {Style.RESET_ALL}""")
     
 def loseBanner():
-    
     print(rf"""{Fore.RED}{Style.BRIGHT}
          █████████    █████████     ███████    ██████   █████ ███████████ █████ ███████████ ███████████   █████████  
         ███▒▒▒▒▒███  ███▒▒▒▒▒███  ███▒▒▒▒▒███ ▒▒██████ ▒▒███ ▒▒███▒▒▒▒▒▒█▒▒███ ▒█▒▒▒███▒▒▒█▒█▒▒▒███▒▒▒█  ███▒▒▒▒▒███ 
@@ -59,12 +55,7 @@ def loseBanner():
         ███    ▒███▒▒███     ███▒▒███     ███  ▒███  ▒▒█████  ▒███  ▒     ▒███     ▒███        ▒███     ▒███    ▒███ 
        ▒▒█████████  ▒▒█████████  ▒▒▒███████▒   █████  ▒▒█████ █████       █████    █████       █████    █████   █████
         ▒▒▒▒▒▒▒▒▒    ▒▒▒▒▒▒▒▒▒     ▒▒▒▒▒▒▒    ▒▒▒▒▒    ▒▒▒▒▒ ▒▒▒▒▒       ▒▒▒▒▒    ▒▒▒▒▒       ▒▒▒▒▒    ▒▒▒▒▒   ▒▒▒▒▒ 
-                                                                                                                    
-                                                                                                                    
-                                                                                                                                                                                        
-                                                                                                              
     {Style.RESET_ALL}""")
-    
     
 def menu():
     print(f"  [{Fore.GREEN}1{Style.RESET_ALL}] Gioca vs BOT")
@@ -81,7 +72,6 @@ def menu():
         except ValueError:
             print(f"{Fore.RED}INPUT NON VALIDO. DEVI INSERIRE UN NUMERO. REINSERISCI{Style.RESET_ALL}")
     
-
 def printPlayerBoard(player):
     """Mostra la situazione attuale del giocatore: il radar sopra e la propria griglia sotto"""
     print(f"\n{Fore.YELLOW}{Style.BRIGHT}=== NEMICO ==={Style.RESET_ALL}")
@@ -91,7 +81,6 @@ def printPlayerBoard(player):
     player.myboard.draw()
     print(f"{Fore.YELLOW}====================================\n{Style.RESET_ALL}")
 
-    
 def placingShipWithKeys(board, nave):
     """Permette all'utente di muovere e ruotare la nave sulla griglia con le freccette."""
     riga = 0
@@ -149,7 +138,7 @@ def placingShipWithKeys(board, nave):
                     board.grid[r][c] = 1  
                     nave.coordinates.append((r, c))
                 return 
-        
+
 def placingShips(board, flotta):
     for nave in flotta:
         placingShipWithKeys(board, nave)
@@ -238,7 +227,18 @@ def playerGame(player, bot):
                     sleep(1.5)
                 else:
                     if esito == "HIT":
-                        print(f"\n{Fore.GREEN}{Style.BRIGHT}BOOM! Bersaglio colpito!{Style.RESET_ALL}")
+                        # Controlla quale nave del bot è stata colpita e se è affondata
+                        nave_affondata = False
+                        for nave in bot.flotta:
+                            if (riga, colonna) in nave.coordinates:
+                                if nave.vita == 0:
+                                    nave_affondata = True
+                                break
+                        if nave_affondata:
+                            bot.navi_rimanenti -= 1
+                            print(f"\n{Fore.GREEN}{Style.BRIGHT}BOOM! Bersaglio colpito e AFFONDATO!{Style.RESET_ALL}")
+                        else:
+                            print(f"\n{Fore.GREEN}{Style.BRIGHT}BOOM! Bersaglio colpito!{Style.RESET_ALL}")
                     elif esito == "MISS":
                         print(f"\n{Fore.BLUE}Splash... Hai mancato.{Style.RESET_ALL}")
                     sleep(2)
@@ -308,4 +308,3 @@ def comandLine(comand, player, conn=None):
         return "CHAT"
         
     return None
-        
