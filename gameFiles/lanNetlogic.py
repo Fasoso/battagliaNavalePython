@@ -40,7 +40,7 @@ def host_game():
             break 
         except socket.timeout:
             # Se scatta il timeout di 1 secondo e nessuno si è connesso, 
-            # il programma si sveglia un attimo e controlla la tastiera!
+            # il programma si sveglia un attimo e controlla la tastiera
             
             if msvcrt.kbhit():  # Verifica se è stato premuto un tasto
                 tasto = msvcrt.getch()

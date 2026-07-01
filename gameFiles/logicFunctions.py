@@ -194,12 +194,10 @@ def playerGame(player, bot):
         os.system('cls' if os.name == 'nt' else 'clear')
         
         print(f"{Fore.YELLOW}{Style.BRIGHT}===  ATTACCA IL NEMICO   ==={Style.RESET_ALL}")
-        
-        # Disegna il radar per la mira
+    
         player.enemyBoard.draw(cursor=[(riga, colonna)])
         
         print(f"\n{Fore.GREEN}=== TUA FLOTTA ==={Style.RESET_ALL}")
-        # Mostra anche la propria griglia per tenere d'occhio la situazione
         player.myboard.draw()
         
         print(f"\n{Fore.CYAN}Frecce: Mira | Lettere: Comando | INVIO: Conferma/Spara{Style.RESET_ALL}")
@@ -259,20 +257,18 @@ def comandLine(comand, player, conn=None):
     # Comandi base sempre validi
     commandList = ['help', 'h', 'enemyhealth', 'showenemybattlefield']
     
-    # FILTRO: Se l'avversario non è un bot (siamo in LAN), sblocchiamo i comandi aggiuntivi
     if player.is_bot == False:
         commandList.extend(['clear', 'surrender', 'ff'])
     
-    # Gestione del comando chat che ha argomenti (es. "chat ciao")
+ 
     is_chat = comand.startswith("chat ") and player.is_bot == False
     
-    # Se non è un comando valido e non è una chat valida, dà errore
     if comand not in commandList and not is_chat:
         print(f"\n{Fore.RED}{Style.BRIGHT}COMANDO SCONOSCIUTO: '{comand}'{Style.RESET_ALL}")
         input("Premi INVIO per continuare...")
         return None
         
-    # --- COINVOLGIMENTO DEI COMANDI ---
+
     elif comand in ["help", "h"]:
         print(f"\n{Fore.CYAN}--- GUIDA AI COMANDI DI GIOCO ---{Style.RESET_ALL}")
         print("  [INVIO vuoto]    : Lancia un missile alle coordinate attuali del mirino.")
@@ -313,11 +309,9 @@ def comandLine(comand, player, conn=None):
 def matchSaving(gameMode ,enemyName, result, shotsFired, shotsHited, precision):
     date = datetime.now().strftime("%d/%m/%Y %H:%M")
     
-    # Messa la singola andata a capo \n al posto di \n\n per evitare righe vuote
     riga = f"[{date}] | Mod: {gameMode} | Avv: {enemyName} | Ris: {result} | Colpi sparati: {shotsFired} | Colpiti: {shotsHited} | Prec: {precision}%\n"
     
     try:
-        # CORRETTO IN matchHistory.txt
         with open("matchHistory.txt", "a", encoding="utf8") as file:
             file.write(riga)
     
@@ -328,9 +322,8 @@ def showHistory():
     print("\033[H\033[J", end="")
     print(f"{Fore.CYAN}{Style.BRIGHT}=== CRONOLOGIA E STATISTICHE PARTITE ==={Style.RESET_ALL}\n")
     
-    righe = [] # Sicurezza
-    try:
-        # CORRETTO IN matchHistory.txt
+    righe = [] 
+    try:        
         with open("matchHistory.txt", "r", encoding="utf8") as file:
             righe = file.readlines() 
             
@@ -340,7 +333,7 @@ def showHistory():
             for riga in righe:
                 testo_riga = riga.strip()
                 if not testo_riga:
-                    continue # Salta righe vuote lasciate dalla vecchia versione
+                    continue 
                     
                 if "VITTORIA" in testo_riga.upper():
                     print(f"{Fore.GREEN}{Style.BRIGHT}{testo_riga}{Style.RESET_ALL}")

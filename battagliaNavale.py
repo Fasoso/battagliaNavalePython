@@ -1,5 +1,6 @@
 import colorama
 import os
+import sys
 from time import sleep
 from gameFiles.logicFunctions import banner, menu, showHistory
 from gameModes.botModeGame import botMode_main
@@ -31,7 +32,13 @@ if __name__ == "__main__":
          
     except KeyboardInterrupt:
         print(colorama.Fore.RED + "\nGAME CLOSED" + colorama.Style.RESET_ALL)
-        sleep(1)
+        try:
+            sleep(1.5)
+
+        except KeyboardInterrupt:
+            pass
+        
+        sys.exit(0)
         os.system('cls' if os.name == 'nt' else 'clear')
         
         
