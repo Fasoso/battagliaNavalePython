@@ -1,10 +1,10 @@
 import colorama
-from colorama import Fore, Style
 import os
 import readchar
 import random
 from time import sleep
-import sys
+from datetime import datetime
+from colorama import Fore, Style
 
 colorama.init(autoreset=True)
 
@@ -60,15 +60,16 @@ def loseBanner():
 def menu():
     print(f"  [{Fore.GREEN}1{Style.RESET_ALL}] Gioca vs BOT")
     print(f"  [{Fore.GREEN}2{Style.RESET_ALL}] Gioca Online (LAN)")
-    print(f"  [{Fore.RED}3{Style.RESET_ALL}] Esci dal gioco")
+    print(f"  [{Fore.GREEN}3{Style.RESET_ALL}] Visualizza la match history")
+    print(f"  [{Fore.RED}4{Style.RESET_ALL}] Esci dal gioco")
     
     while True:
         try:
             choice = int(input(f"{Fore.GREEN}\n>>> {Style.RESET_ALL}"))
-            if 1 <= choice <= 3:
+            if 1 <= choice <= 4:
                 return choice
             else:
-                print(f"{Fore.RED}IL VALORE DEVE ESSERE COMPRESO TRA 1 E 3. REINSERISCI{Style.RESET_ALL}")
+                print(f"{Fore.RED}IL VALORE DEVE ESSERE COMPRESO TRA 1 E 4. REINSERISCI{Style.RESET_ALL}")
         except ValueError:
             print(f"{Fore.RED}INPUT NON VALIDO. DEVI INSERIRE UN NUMERO. REINSERISCI{Style.RESET_ALL}")
     
@@ -308,3 +309,47 @@ def comandLine(comand, player, conn=None):
         return "CHAT"
         
     return None
+
+def matchSaving(gameMode ,enemyName, result, shotsFired, shotsHited, precision):
+    date = datetime.now().strftime("%d/%m/%Y %H:%M")
+    
+    # Messa la singola andata a capo \n al posto di \n\n per evitare righe vuote
+    riga = f"[{date}] | Mod: {gameMode} | Avv: {enemyName} | Ris: {result} | Colpi sparati: {shotsFired} | Colpiti: {shotsHited} | Prec: {precision}%\n"
+    
+    try:
+        # CORRETTO IN matchHistory.txt
+        with open("matchHistory.txt", "a", encoding="utf8") as file:
+            file.write(riga)
+    
+    except Exception as e:
+        print(f"{Fore.RED}{Style.BRIGHT}IMPOSSIBILE SALVARE LA PARTITA RICONTROLLARE LA PARTITA...{e}{Style.RESET_ALL}")
+
+def showHistory():
+    print("\033[H\033[J", end="")
+    print(f"{Fore.CYAN}{Style.BRIGHT}=== CRONOLOGIA E STATISTICHE PARTITE ==={Style.RESET_ALL}\n")
+    
+    righe = [] # Sicurezza
+    try:
+        # CORRETTO IN matchHistory.txt
+        with open("matchHistory.txt", "r", encoding="utf8") as file:
+            righe = file.readlines() 
+            
+        if not righe:
+            print(f"{Fore.YELLOW}Nessuna partita giocata{Style.RESET_ALL}")
+        else:
+            for riga in righe:
+                testo_riga = riga.strip()
+                if not testo_riga:
+                    continue # Salta righe vuote lasciate dalla vecchia versione
+                    
+                if "VITTORIA" in testo_riga.upper():
+                    print(f"{Fore.GREEN}{Style.BRIGHT}{testo_riga}{Style.RESET_ALL}")
+                elif "SCONFITTA" in testo_riga.upper() or "Sconfitta" in testo_riga:
+                    print(f"{Fore.RED}{Style.BRIGHT}{testo_riga}{Style.RESET_ALL}")
+                else:
+                    print(testo_riga)
+                    
+    except FileNotFoundError:
+        print(f"{Fore.YELLOW}Non hai ancora disputato nessuna partita (nessun file trovato).{Style.RESET_ALL}")
+        
+    input(f"\n{Fore.YELLOW}Premi INVIO per tornare al menu principale...{Style.RESET_ALL}")

@@ -1,29 +1,66 @@
 import socket
 import os
+import msvcrt
 from colorama import Fore, Style
 from time import sleep
 
 def host_game():
-    """Logica per il server. Restituisce il socket connesso."""
-    os.system('cls' if os.name == 'nt' else 'clear')
+    """Avvia il server in ascolto, permettendo di annullare premendo ESC."""
+    # Creiamo il socket normalmente
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     
-    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    nome_host = socket.gethostname()
-    ip_locale = socket.gethostbyname(nome_host)
-    porta = 5555 
+    # Tentiamo il bind (recuperando l'IP locale automaticamente)
+    hostname = socket.gethostname()
+    local_ip = socket.gethostbyname(hostname)
+    port = 50007
     
-    server_socket.bind(('0.0.0.0', porta)) 
-    server_socket.listen(1) 
-    
-    print(f"{Fore.GREEN}{Style.BRIGHT}=== SERVER AVVIATO ==={Style.RESET_ALL}")
-    print(f"In attesa di uno sfidante...")
-    print(f"Di' al tuo amico di connettersi a questo IP: {Fore.YELLOW}{ip_locale}{Style.RESET_ALL}")
+    try:
+        server.bind((local_ip, port))
+        server.listen(1)
+        server.settimeout(1.0) 
+    except Exception as e:
+        print(f"\n{Fore.RED}Errore durante l'avvio del server: {e}{Style.RESET_ALL}")
+        sleep(2)
+        return None
 
-    conn, addr = server_socket.accept()
-    
-    print(f"\n{Fore.GREEN}Sfida accettata! Giocatore connesso da: {addr[0]}{Style.RESET_ALL}")
-    sleep(2)
-    
+    print(f"\n{Fore.CYAN}=== SERVER IN ASCOLTO ==={Style.RESET_ALL}")
+    print(f"Comunica questo IP al tuo amico: {Fore.YELLOW}{local_ip}{Style.RESET_ALL}")
+    print(f"{Fore.WHITE}In attesa che l'avversario si connetta...{Style.RESET_ALL}")
+    print(f"{Fore.RED}Premi ESC per annullare e tornare al menu.{Style.RESET_ALL}\n")
+
+    conn = addr = None
+
+
+    while True:
+        try:
+            # Tenta di accettare la connessione per 1 secondo
+            conn, addr = server.accept()
+            # Se ci riesce, interrompe il ciclo ed entra in partita
+            break 
+        except socket.timeout:
+            # Se scatta il timeout di 1 secondo e nessuno si è connesso, 
+            # il programma si sveglia un attimo e controlla la tastiera!
+            
+            if msvcrt.kbhit():  # Verifica se è stato premuto un tasto
+                tasto = msvcrt.getch()
+                # 27 è il codice ASCII del tasto ESC, b'\x03' è Ctrl+C
+                if tasto == b'\x1b' or tasto == b'\x03': 
+                    print(f"\n{Fore.YELLOW}Connessione annullata dall'utente. Chiusura server...{Style.RESET_ALL}")
+                    server.close()
+                    sleep(1.5)
+                    return None
+            
+            # Se nessun tasto è stato premuto, il ciclo ricomincia e aspetta un altro secondo
+            continue
+        except (KeyboardInterrupt, SystemExit):
+            # Cattura il Ctrl+C se preso nei microsecondi di break
+            print(f"\n{Fore.RED}Chiusura server...{Style.RESET_ALL}")
+            server.close()
+            return None
+
+    print(f"{Fore.GREEN}Giocatore connesso da: {addr[0]}{Style.RESET_ALL}")
+    sleep(1.5)
     return conn
 
 def join_game():
@@ -32,7 +69,7 @@ def join_game():
     
     print(f"{Fore.CYAN}{Style.BRIGHT}=== UNISCITI A UNA PARTITA ==={Style.RESET_ALL}")
     ip_host = input(f"Inserisci l'IP dell'Host:\n{Fore.CYAN}>>> {Style.RESET_ALL}").strip()
-    porta = 5555
+    porta = 50007
     
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     print(f"\nTentativo di connessione a {ip_host}...")

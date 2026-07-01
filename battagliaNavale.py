@@ -1,7 +1,7 @@
 import colorama
 import os
 from time import sleep
-from gameFiles.logicFunctions import banner, menu
+from gameFiles.logicFunctions import banner, menu, showHistory
 from gameModes.botModeGame import botMode_main
 from gameModes.lanModeGame import lanMode_main
 
@@ -18,9 +18,14 @@ if __name__ == "__main__":
             
             if choice == 1:
                 botMode_main()
+                
             elif choice == 2:
                 lanMode_main()
+            
             elif choice == 3:
+                showHistory()
+                
+            elif choice == 4:
                 print(colorama.Fore.RED + "GAME CLOSED" + colorama.Style.RESET_ALL)
                 break
          

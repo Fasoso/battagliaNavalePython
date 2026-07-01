@@ -82,8 +82,9 @@ def botMode_main():
         if sum(nave.vita for nave in bot.flotta) == 0:
                 os.system('cls' if os.name == 'nt' else 'clear')
                 winBanner()
-                
                 precisione = int((player.shotsHit / player.shotsFired) * 100) if player.shotsFired > 0 else 0
+                matchSaving("VS BOT", bot.nome, "VITTORIA", player.shotsFired, player.shotsHit, precisione)
+
                 print(f"{Fore.YELLOW}--- RAPPORTO DI FINE BATTAGLIA ---{Style.RESET_ALL}")
                 print(f"Colpi sparati: {player.shotsFired}")
                 print(f"Colpi a segno: {player.shotsHit}")
@@ -96,7 +97,10 @@ def botMode_main():
                 os.system('cls' if os.name == 'nt' else 'clear')
                 
                 loseBanner()
+                
                 precisione = int((player.shotsHit / player.shotsFired) * 100) if player.shotsFired > 0 else 0
+                matchSaving("VS BOT", bot.nome, "SCONFITTA", player.shotsFired, player.shotsHit, precisione)
+    
                 print(f"{Fore.YELLOW}--- RAPPORTO DI FINE BATTAGLIA ---{Style.RESET_ALL}")
                 print(f"Colpi sparati: {player.shotsFired}")
                 print(f"Colpi a segno: {player.shotsHit}")

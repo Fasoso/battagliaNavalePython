@@ -95,6 +95,8 @@ def start_lan_match(conn, is_host):
                             os.system('cls' if os.name == 'nt' else 'clear')
                             loseBanner()
                             print(f"{Fore.RED}Ti sei arreso. Il nemico ha vinto la partita.{Style.RESET_ALL}\n")
+                            precisione = int((player.shotsHit / player.shotsFired) * 100) if player.shotsFired > 0 else 0
+                            matchSaving("LAN", nome_avversario, "SCONFITTA", player.shotsFired, player.shotsHit, precisione)
                             input("Premi INVIO per uscire...")
                             game_over = True
                             break
@@ -135,6 +137,7 @@ def start_lan_match(conn, is_host):
                 os.system('cls' if os.name == 'nt' else 'clear')
                 winBanner()
                 precisione = int((player.shotsHit / player.shotsFired) * 100) if player.shotsFired > 0 else 0
+                matchSaving("LAN", nome_avversario, "VITTORIA", player.shotsFired, player.shotsHit, precisione)
                 
                 print(f"{Fore.CYAN}Missione compiuta, Comandante {player.nome}! La flotta nemica è distrutta.{Style.RESET_ALL}\n")
                 print(f"{Fore.YELLOW}--- RAPPORTO DI FINE BATTAGLIA ---{Style.RESET_ALL}")
@@ -165,6 +168,8 @@ def start_lan_match(conn, is_host):
                     os.system('cls' if os.name == 'nt' else 'clear')
                     winBanner()
                     print(f"{Fore.GREEN}Il comandante {nome_avversario} ha alzato bandiera bianca! Vittoria a tavolino!{Style.RESET_ALL}\n")
+                    precisione = int((player.shotsHit / player.shotsFired) * 100) if player.shotsFired > 0 else 0
+                    matchSaving("LAN", nome_avversario, "VITTORIA", player.shotsFired, player.shotsHit, precisione)
                     input("Premi INVIO per tornare al menu...")
                     game_over = True
                     break
